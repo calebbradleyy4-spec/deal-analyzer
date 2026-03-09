@@ -182,7 +182,7 @@ const styles = `
     font-size: 10px;
     letter-spacing: 3px;
     text-transform: uppercase;
-    color: var(--accent);
+    color: var(--card-title-color);
     margin-bottom: 20px;
   }
 
@@ -747,7 +747,7 @@ export default function App() {
   const [warmBg, setWarmBg] = useState(true);
 
   useEffect(() => {
-    document.body.style.background = darkMode ? '#0a0a0a' : (warmBg ? '#f5f0e8' : '#f0f4f8');
+    document.body.style.background = darkMode ? '#0a0a0a' : (warmBg ? '#e8ede8' : '#f0f4f8');
   }, [darkMode, warmBg]);
 
   const cssVars = darkMode ? {
@@ -761,6 +761,7 @@ export default function App() {
     '--text-muted': '#666',
     '--placeholder': '#333',
     '--accent': accent,
+    '--card-title-color': accent,
     '--tab-hover-bg': '#111',
     '--tab-hover-text': '#e8e0d0',
     '--input-bg': '#0a0a0a',
@@ -771,7 +772,7 @@ export default function App() {
     '--warning-bg': '#1a1400',
     '--warning-border': '#4d3a00',
   } : {
-    '--bg': warmBg ? '#f5f0e8' : '#f0f4f8',
+    '--bg': warmBg ? '#e8ede8' : '#f0f4f8',
     '--card-bg': '#ffffff',
     '--border': warmBg ? '#e0d8cc' : '#cdd9e5',
     '--border-subtle': warmBg ? '#ddd6c8' : '#c8d8e8',
@@ -781,6 +782,7 @@ export default function App() {
     '--text-muted': '#999',
     '--placeholder': '#bbb',
     '--accent': accent,
+    '--card-title-color': '#e8ede8',
     '--tab-hover-bg': warmBg ? '#ece6da' : '#e4edf5',
     '--tab-hover-text': '#1a1a1a',
     '--input-bg': '#ffffff',
@@ -802,7 +804,7 @@ export default function App() {
               <>
                 <button
                   className={`bg-swatch${warmBg ? ' selected' : ''}`}
-                  style={{ background: '#f5f0e8' }}
+                  style={{ background: '#e8ede8' }}
                   onClick={() => setWarmBg(true)}
                   title="Warm background"
                 />
