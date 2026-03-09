@@ -390,6 +390,17 @@ const styles = `
 
   .reset-btn:hover { color: var(--accent); }
 
+  .field-calc {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--accent);
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--card-bg);
+    opacity: 0.85;
+  }
+
   .history-header {
     display: flex;
     justify-content: space-between;
@@ -780,36 +791,36 @@ function BRRRRAnalyzer({ onSaveDeal }) {
 
 function FlipAnalyzer({ onSaveDeal }) {
   const [f, setF] = useState({
-    purchasePrice: "", rehabCost: "", arv: "",
-    holdingMonths: "6", holdingCostPerMonth: "",
-    closingBuy: "1", closingSell: "7", financingRate: "", financingPoints: "2",
+    purchasePrice: "", rehabCost: "", arv: "", totalLoanAmount: "",
+    holdingMonths: "6", interestRate: "",
+    closingBuy: "1", closingSell: "7", backEndPct: "",
   });
   const [results, setResults] = useState(null);
   const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
+
+  // Live-calculated values
+  const loanAmt = +f.totalLoanAmount;
+  const monthlyInterestCost = loanAmt > 0 && f.interestRate !== "" ? (loanAmt * (+f.interestRate / 100)) / 12 : 0;
+  const backEndCost = loanAmt > 0 && f.backEndPct !== "" ? loanAmt * (+f.backEndPct / 100) : 0;
 
   function analyze() {
     const purchase = +f.purchasePrice;
     const rehab = +f.rehabCost;
     const arv = +f.arv;
     const months = +f.holdingMonths;
-    const holdingPerMonth = +f.holdingCostPerMonth;
     const closingBuyPct = +f.closingBuy / 100;
     const closingSellPct = +f.closingSell / 100;
-    const financingRate = +f.financingRate / 100 / 12;
-    const points = +f.financingPoints / 100;
 
     const closingBuy = purchase * closingBuyPct;
     const closingSell = arv * closingSellPct;
-    const holdingTotal = holdingPerMonth * months;
-    const financingCost = financingRate > 0 ? purchase * financingRate * months : 0;
-    const originationFee = purchase * points;
-    const totalCost = purchase + rehab + closingBuy + closingSell + holdingTotal + financingCost + originationFee;
+    const interestTotal = monthlyInterestCost * months;
+    const totalCost = purchase + rehab + closingBuy + closingSell + interestTotal + backEndCost;
     const profit = arv - totalCost;
-    const roi = ((profit / totalCost) * 100);
+    const roi = (profit / totalCost) * 100;
     const annualizedRoi = roi / (months / 12);
     const isGo = profit >= 20000;
 
-    setResults({ purchase, rehab, closingBuy, closingSell, holdingTotal, financingCost, originationFee, totalCost, profit, roi, annualizedRoi, isGo });
+    setResults({ purchase, rehab, closingBuy, closingSell, interestTotal, monthlyInterestCost, backEndCost, totalCost, profit, roi, annualizedRoi, isGo });
     onSaveDeal({ type: 'Flip', verdict: isGo ? 'GO' : 'NO-GO', profit, roi, purchasePrice: purchase, arv });
   }
 
@@ -850,9 +861,8 @@ function FlipAnalyzer({ onSaveDeal }) {
         <div className="breakdown-row"><span className="label">Rehab Cost</span><span className="value">{fmt(results.rehab)}</span></div>
         <div className="breakdown-row"><span className="label">Buying Closing Costs</span><span className="value">{fmt(results.closingBuy)}</span></div>
         <div className="breakdown-row"><span className="label">Selling Closing Costs</span><span className="value">{fmt(results.closingSell)}</span></div>
-        <div className="breakdown-row"><span className="label">Holding Costs</span><span className="value">{fmt(results.holdingTotal)}</span></div>
-        {results.financingCost > 0 && <div className="breakdown-row"><span className="label">Financing Interest</span><span className="value">{fmt(results.financingCost)}</span></div>}
-        {results.originationFee > 0 && <div className="breakdown-row"><span className="label">Origination Fee</span><span className="value">{fmt(results.originationFee)}</span></div>}
+        {results.interestTotal > 0 && <div className="breakdown-row"><span className="label">Monthly Interest Cost ({f.holdingMonths} mo)</span><span className="value">{fmt(results.interestTotal)}</span></div>}
+        {results.backEndCost > 0 && <div className="breakdown-row"><span className="label">Back End Payment</span><span className="value">{fmt(results.backEndCost)}</span></div>}
         <hr className="divider" />
         <div className="breakdown-row"><span className="label">Total All-In Cost</span><span className="value gold">{fmt(results.totalCost)}</span></div>
         <div className="breakdown-row"><span className="label">Sale Price (ARV)</span><span className="value">{fmt(+f.arv)}</span></div>
@@ -871,13 +881,15 @@ function FlipAnalyzer({ onSaveDeal }) {
           <div className="field"><label>Purchase Price</label><input type="number" placeholder="150000" value={f.purchasePrice} onChange={set("purchasePrice")} /></div>
           <div className="field"><label>Rehab Cost</label><input type="number" placeholder="45000" value={f.rehabCost} onChange={set("rehabCost")} /></div>
           <div className="field"><label>After Repair Value (ARV)</label><input type="number" placeholder="260000" value={f.arv} onChange={set("arv")} /></div>
+          <div className="field"><label>Total Loan Amount</label><input type="number" placeholder="150000" value={f.totalLoanAmount} onChange={set("totalLoanAmount")} /></div>
         </div>
         <div className="card">
           <div className="card-title">Holding & Financing</div>
           <div className="field"><label>Holding Period (months)</label><input type="number" placeholder="6" value={f.holdingMonths} onChange={set("holdingMonths")} /></div>
-          <div className="field"><label>Monthly Holding Costs</label><input type="number" placeholder="1200" value={f.holdingCostPerMonth} onChange={set("holdingCostPerMonth")} /></div>
-          <div className="field"><label>Hard Money Rate (%/yr)</label><input type="number" placeholder="10" value={f.financingRate} onChange={set("financingRate")} /></div>
-          <div className="field"><label>Origination Points (%)</label><input type="number" placeholder="2" value={f.financingPoints} onChange={set("financingPoints")} /></div>
+          <div className="field"><label>Interest Rate (% /yr)</label><input type="number" placeholder="10" value={f.interestRate} onChange={set("interestRate")} /></div>
+          <div className="field"><label>Monthly Interest Cost</label><div className="field-calc">{fmt(monthlyInterestCost)}</div></div>
+          <div className="field"><label>Back End Payment (%)</label><input type="number" placeholder="2" value={f.backEndPct} onChange={set("backEndPct")} /></div>
+          <div className="field"><label>Back End Cost</label><div className="field-calc">{fmt(backEndCost)}</div></div>
         </div>
         <div className="card">
           <div className="card-title">Closing Costs</div>
