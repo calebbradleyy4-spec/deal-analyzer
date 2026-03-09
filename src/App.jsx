@@ -389,6 +389,156 @@ const styles = `
   }
 
   .reset-btn:hover { color: var(--accent); }
+
+  .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .history-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .history-action-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    background: none;
+    border: 1px solid var(--border-subtle);
+    border-radius: 3px;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 6px 12px;
+    transition: all 0.2s;
+  }
+
+  .history-action-btn:hover:not(:disabled) {
+    color: var(--text);
+    border-color: var(--text-dim);
+  }
+
+  .history-action-btn.danger {
+    border-color: #ef5350;
+    color: #ef5350;
+  }
+
+  .history-action-btn.danger:hover:not(:disabled) {
+    background: #ef5350;
+    color: #fff;
+  }
+
+  .history-action-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .deal-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 10px;
+    transition: border-color 0.15s;
+  }
+
+  .deal-card.selected {
+    border-color: var(--accent);
+  }
+
+  .deal-checkbox {
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .deal-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    background: var(--border-subtle);
+  }
+
+  .deal-badge.brrrr { color: #4caf50; }
+  .deal-badge.flip  { color: #5b9bd5; }
+
+  .deal-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .deal-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  .deal-price {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .deal-verdict-badge {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 2px;
+    flex-shrink: 0;
+  }
+
+  .deal-verdict-badge.go   { color: #4caf50; }
+  .deal-verdict-badge.nogo { color: #ef5350; }
+
+  .deal-metric {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    text-align: right;
+    min-width: 110px;
+    flex-shrink: 0;
+  }
+
+  .deal-delete {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-dim);
+    font-size: 11px;
+    padding: 4px 6px;
+    transition: color 0.2s;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .deal-delete:hover { color: #ef5350; }
+
+  .history-empty {
+    text-align: center;
+    padding: 80px 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 2.2;
+    letter-spacing: 1px;
+  }
 `;
 
 function fmt(n, prefix = "$") {
@@ -430,7 +580,7 @@ const warningStyle = `
   .threshold-row input { flex: 1; }
 `;
 
-function BRRRRAnalyzer() {
+function BRRRRAnalyzer({ onSaveDeal }) {
   const [f, setF] = useState({
     purchasePrice: "", rehabCost: "", arv: "",
     refiFee: "3", monthlyRent: "", vacancy: "8",
@@ -495,6 +645,7 @@ function BRRRRAnalyzer() {
     const capitalWarning = cashLeftIn > 0 && maxCapitalLeft === null;
 
     setResults({ totalInvested, refiLoan, refiFees, cashReturned, cashLeftIn, mortgage, effectiveRent, mgmtCost, totalExpenses, monthlyCashFlow, annualCashFlow, cocReturn, equity, isGo, failReasons, passReasons, capitalWarning, maxCapitalLeft });
+    onSaveDeal({ type: 'BRRRR', verdict: isGo ? 'GO' : 'NO-GO', monthlyCashFlow, cocReturn, purchasePrice: purchase, arv });
   }
 
   const thresholdInputStyle = {
@@ -627,7 +778,7 @@ function BRRRRAnalyzer() {
 
 // ── FLIP ANALYZER ────────────────────────────────────────────────────────────
 
-function FlipAnalyzer() {
+function FlipAnalyzer({ onSaveDeal }) {
   const [f, setF] = useState({
     purchasePrice: "", rehabCost: "", arv: "",
     holdingMonths: "6", holdingCostPerMonth: "",
@@ -659,6 +810,7 @@ function FlipAnalyzer() {
     const isGo = profit >= 20000;
 
     setResults({ purchase, rehab, closingBuy, closingSell, holdingTotal, financingCost, originationFee, totalCost, profit, roi, annualizedRoi, isGo });
+    onSaveDeal({ type: 'Flip', verdict: isGo ? 'GO' : 'NO-GO', profit, roi, purchasePrice: purchase, arv });
   }
 
   if (results) return (
@@ -738,6 +890,79 @@ function FlipAnalyzer() {
   );
 }
 
+// ── DEAL HISTORY ─────────────────────────────────────────────────────────────
+
+function DealHistory({ deals, onDelete }) {
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState(new Set());
+
+  function toggleSelect(id) {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function deleteSelected() {
+    selected.forEach(id => onDelete(id));
+    setSelected(new Set());
+    setSelectMode(false);
+  }
+
+  function cancelSelect() {
+    setSelected(new Set());
+    setSelectMode(false);
+  }
+
+  if (deals.length === 0) return (
+    <div className="history-empty">
+      <div>No deals analyzed yet.</div>
+      <div>Run your first analysis to see it here.</div>
+    </div>
+  );
+
+  return (
+    <div>
+      <div className="history-header">
+        <span className="history-count">{deals.length} deal{deals.length !== 1 ? 's' : ''}</span>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {selectMode ? (
+            <>
+              <button className="history-action-btn danger" onClick={deleteSelected} disabled={selected.size === 0}>
+                Delete Selected ({selected.size})
+              </button>
+              <button className="history-action-btn" onClick={cancelSelect}>Cancel</button>
+            </>
+          ) : (
+            <button className="history-action-btn" onClick={() => setSelectMode(true)}>Select</button>
+          )}
+        </div>
+      </div>
+      {deals.map(deal => (
+        <div key={deal.id} className={`deal-card${selected.has(deal.id) ? ' selected' : ''}`}>
+          {selectMode && (
+            <input type="checkbox" className="deal-checkbox" checked={selected.has(deal.id)} onChange={() => toggleSelect(deal.id)} />
+          )}
+          <span className={`deal-badge ${deal.type.toLowerCase()}`}>{deal.type}</span>
+          <div className="deal-info">
+            <span className="deal-date">{deal.date}</span>
+            {deal.purchasePrice > 0 && <span className="deal-price">{fmt(deal.purchasePrice)} purchase</span>}
+          </div>
+          <div className={`deal-verdict-badge ${deal.verdict === 'GO' ? 'go' : 'nogo'}`}>{deal.verdict}</div>
+          <div className="deal-metric">
+            {deal.type === 'BRRRR' ? `${fmt(deal.monthlyCashFlow)}/mo` : `${fmt(deal.profit)} profit`}
+          </div>
+          {!selectMode && (
+            <button className="deal-delete" onClick={() => onDelete(deal.id)} title="Delete">✕</button>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── APP ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
@@ -745,6 +970,15 @@ export default function App() {
   const [darkMode, setDarkMode] = useState(true);
   const [accent, setAccent] = useState('#c8a96e');
   const [warmBg, setWarmBg] = useState(true);
+  const [deals, setDeals] = useState([]);
+
+  function handleSaveDeal(deal) {
+    setDeals(prev => [{ ...deal, id: Date.now(), date: new Date().toLocaleDateString() }, ...prev]);
+  }
+
+  function handleDeleteDeal(id) {
+    setDeals(prev => prev.filter(d => d.id !== id));
+  }
 
   useEffect(() => {
     document.body.style.background = darkMode ? '#0a0a0a' : (warmBg ? '#a8c8e8' : '#f0f4f8');
@@ -839,9 +1073,12 @@ export default function App() {
         <div className="tabs">
           <button className={`tab ${tab === "brrrr" ? "active" : ""}`} onClick={() => setTab("brrrr")}>BRRRR Rental</button>
           <button className={`tab ${tab === "flip" ? "active" : ""}`} onClick={() => setTab("flip")}>Fix & Flip</button>
+          <button className={`tab ${tab === "history" ? "active" : ""}`} onClick={() => setTab("history")}>Deal History</button>
         </div>
         <div className="container">
-          {tab === "brrrr" ? <BRRRRAnalyzer /> : <FlipAnalyzer />}
+          {tab === "brrrr" && <BRRRRAnalyzer onSaveDeal={handleSaveDeal} />}
+          {tab === "flip"  && <FlipAnalyzer  onSaveDeal={handleSaveDeal} />}
+          {tab === "history" && <DealHistory deals={deals} onDelete={handleDeleteDeal} />}
         </div>
       </div>
     </>
