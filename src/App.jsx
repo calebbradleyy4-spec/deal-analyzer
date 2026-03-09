@@ -196,7 +196,7 @@ const styles = `
     font-size: 10px;
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    color: var(--text-dim);
+    color: var(--label-color);
     margin-bottom: 6px;
   }
 
@@ -760,6 +760,7 @@ export default function App() {
     '--text-dim': '#555',
     '--text-muted': '#666',
     '--placeholder': '#333',
+    '--label-color': '#ffffff',
     '--accent': accent,
     '--card-title-color': accent,
     '--tab-hover-bg': '#111',
@@ -781,6 +782,7 @@ export default function App() {
     '--text-dim': '#000000',
     '--text-muted': '#000000',
     '--placeholder': '#000000',
+    '--label-color': '#000000',
     '--accent': accent,
     '--card-title-color': '#000000',
     '--tab-hover-bg': warmBg ? '#ece6da' : '#e4edf5',
