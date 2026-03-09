@@ -747,7 +747,7 @@ export default function App() {
   const [warmBg, setWarmBg] = useState(true);
 
   useEffect(() => {
-    document.body.style.background = darkMode ? '#0a0a0a' : (warmBg ? '#2d4a2d' : '#f0f4f8');
+    document.body.style.background = darkMode ? '#0a0a0a' : (warmBg ? '#a8c8e8' : '#f0f4f8');
   }, [darkMode, warmBg]);
 
   const cssVars = darkMode ? {
@@ -772,17 +772,17 @@ export default function App() {
     '--warning-bg': '#1a1400',
     '--warning-border': '#4d3a00',
   } : {
-    '--bg': warmBg ? '#2d4a2d' : '#f0f4f8',
-    '--card-bg': '#3a5c3a',
+    '--bg': warmBg ? '#a8c8e8' : '#f0f4f8',
+    '--card-bg': '#bdd5ee',
     '--border': warmBg ? '#e0d8cc' : '#cdd9e5',
     '--border-subtle': warmBg ? '#ddd6c8' : '#c8d8e8',
     '--border-inner': warmBg ? '#ece6da' : '#dce8f2',
-    '--text': '#f0f0f0',
+    '--text': '#ffffff',
     '--text-dim': '#777',
     '--text-muted': '#999',
     '--placeholder': '#bbb',
     '--accent': accent,
-    '--card-title-color': '#2d4a2d',
+    '--card-title-color': '#a8c8e8',
     '--tab-hover-bg': warmBg ? '#ece6da' : '#e4edf5',
     '--tab-hover-text': '#1a1a1a',
     '--input-bg': '#ffffff',
@@ -804,7 +804,7 @@ export default function App() {
               <>
                 <button
                   className={`bg-swatch${warmBg ? ' selected' : ''}`}
-                  style={{ background: '#2d4a2d' }}
+                  style={{ background: '#a8c8e8' }}
                   onClick={() => setWarmBg(true)}
                   title="Warm background"
                 />
