@@ -1,37 +1,112 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const ACCENTS = ['#c8a96e', '#5b9bd5', '#4caf50', '#ef5350'];
 
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  body {
-    background: #0a0a0a;
-    color: #e8e0d0;
-    font-family: 'DM Sans', sans-serif;
-  }
-
   .app {
     min-height: 100vh;
-    background: #0a0a0a;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
     padding: 40px 20px;
+    transition: background 0.25s, color 0.25s;
   }
 
   .header {
+    position: relative;
     text-align: center;
     margin-bottom: 48px;
+  }
+
+  .header-controls {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .color-swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    padding: 0;
+    outline: none;
+    transition: transform 0.15s;
+    flex-shrink: 0;
+  }
+
+  .color-swatch.selected {
+    border-color: var(--text);
+  }
+
+  .color-swatch:hover {
+    transform: scale(1.25);
+  }
+
+  .bg-swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    padding: 0;
+    outline: none;
+    transition: transform 0.15s;
+    flex-shrink: 0;
+  }
+
+  .bg-swatch.selected {
+    border-color: var(--text-dim);
+  }
+
+  .bg-swatch:hover {
+    transform: scale(1.25);
+  }
+
+  .swatch-divider {
+    width: 1px;
+    height: 14px;
+    background: var(--border-subtle);
+    flex-shrink: 0;
+  }
+
+  .theme-toggle {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    background: none;
+    border: 1px solid var(--border-subtle);
+    border-radius: 3px;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 4px 10px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .theme-toggle:hover {
+    color: var(--text);
+    border-color: var(--text-dim);
   }
 
   .header h1 {
     font-family: 'Bebas Neue', sans-serif;
     font-size: clamp(48px, 8vw, 96px);
     letter-spacing: 4px;
-    color: #e8e0d0;
+    color: var(--text);
     line-height: 1;
   }
 
   .header h1 span {
-    color: #c8a96e;
+    color: var(--accent);
   }
 
   .header p {
@@ -39,7 +114,7 @@ const styles = `
     font-size: 11px;
     letter-spacing: 3px;
     text-transform: uppercase;
-    color: #666;
+    color: var(--text-muted);
     margin-top: 8px;
   }
 
@@ -48,7 +123,7 @@ const styles = `
     justify-content: center;
     gap: 0;
     margin-bottom: 40px;
-    border: 1px solid #222;
+    border: 1px solid var(--border-subtle);
     border-radius: 4px;
     width: fit-content;
     margin-left: auto;
@@ -63,20 +138,20 @@ const styles = `
     text-transform: uppercase;
     padding: 12px 32px;
     background: transparent;
-    color: #555;
+    color: var(--text-dim);
     border: none;
     cursor: pointer;
     transition: all 0.2s;
   }
 
   .tab.active {
-    background: #c8a96e;
+    background: var(--accent);
     color: #0a0a0a;
   }
 
   .tab:hover:not(.active) {
-    color: #e8e0d0;
-    background: #111;
+    color: var(--tab-hover-text);
+    background: var(--tab-hover-bg);
   }
 
   .container {
@@ -92,11 +167,12 @@ const styles = `
 
   @media (max-width: 640px) {
     .grid { grid-template-columns: 1fr; }
+    .header-controls { position: static; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
   }
 
   .card {
-    background: #111;
-    border: 1px solid #1e1e1e;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
     border-radius: 4px;
     padding: 28px;
   }
@@ -106,7 +182,7 @@ const styles = `
     font-size: 10px;
     letter-spacing: 3px;
     text-transform: uppercase;
-    color: #c8a96e;
+    color: var(--accent);
     margin-bottom: 20px;
   }
 
@@ -120,17 +196,17 @@ const styles = `
     font-size: 10px;
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    color: #555;
+    color: var(--text-dim);
     margin-bottom: 6px;
   }
 
   .field input {
     width: 100%;
-    background: #0a0a0a;
-    border: 1px solid #222;
+    background: var(--input-bg);
+    border: 1px solid var(--border-subtle);
     border-radius: 3px;
     padding: 10px 14px;
-    color: #e8e0d0;
+    color: var(--text);
     font-family: 'DM Mono', monospace;
     font-size: 14px;
     outline: none;
@@ -138,17 +214,17 @@ const styles = `
   }
 
   .field input:focus {
-    border-color: #c8a96e;
+    border-color: var(--accent);
   }
 
   .field input::placeholder {
-    color: #333;
+    color: var(--placeholder);
   }
 
   .analyze-btn {
     width: 100%;
     padding: 16px;
-    background: #c8a96e;
+    background: var(--accent);
     color: #0a0a0a;
     border: none;
     border-radius: 4px;
@@ -157,11 +233,11 @@ const styles = `
     letter-spacing: 3px;
     cursor: pointer;
     margin-top: 24px;
-    transition: all 0.2s;
+    transition: filter 0.2s, transform 0.2s;
   }
 
   .analyze-btn:hover {
-    background: #d4b87e;
+    filter: brightness(1.08);
     transform: translateY(-1px);
   }
 
@@ -186,20 +262,20 @@ const styles = `
   }
 
   .verdict.go {
-    background: #0d1f0d;
-    border: 1px solid #1a4d1a;
+    background: var(--verdict-go-bg);
+    border: 1px solid var(--verdict-go-border);
   }
 
   .verdict.nogo {
-    background: #1f0d0d;
-    border: 1px solid #4d1a1a;
+    background: var(--verdict-nogo-bg);
+    border: 1px solid var(--verdict-nogo-border);
   }
 
   .verdict-label {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 14px;
     letter-spacing: 3px;
-    color: #555;
+    color: var(--text-dim);
   }
 
   .verdict-text {
@@ -215,7 +291,7 @@ const styles = `
   .verdict-reason {
     font-family: 'DM Mono', monospace;
     font-size: 11px;
-    color: #666;
+    color: var(--text-muted);
     text-align: right;
     max-width: 240px;
     line-height: 1.6;
@@ -229,8 +305,8 @@ const styles = `
   }
 
   .metric {
-    background: #111;
-    border: 1px solid #1e1e1e;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
     border-radius: 4px;
     padding: 20px;
   }
@@ -240,7 +316,7 @@ const styles = `
     font-size: 9px;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: #555;
+    color: var(--text-dim);
     margin-bottom: 8px;
   }
 
@@ -248,16 +324,16 @@ const styles = `
     font-family: 'Bebas Neue', sans-serif;
     font-size: 28px;
     letter-spacing: 1px;
-    color: #e8e0d0;
+    color: var(--text);
   }
 
   .metric-value.positive { color: #4caf50; }
   .metric-value.negative { color: #ef5350; }
-  .metric-value.neutral { color: #c8a96e; }
+  .metric-value.neutral { color: var(--accent); }
 
   .breakdown {
-    background: #111;
-    border: 1px solid #1e1e1e;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
     border-radius: 4px;
     padding: 24px;
   }
@@ -267,7 +343,7 @@ const styles = `
     font-size: 10px;
     letter-spacing: 3px;
     text-transform: uppercase;
-    color: #c8a96e;
+    color: var(--accent);
     margin-bottom: 16px;
   }
 
@@ -276,22 +352,22 @@ const styles = `
     justify-content: space-between;
     align-items: center;
     padding: 8px 0;
-    border-bottom: 1px solid #1a1a1a;
+    border-bottom: 1px solid var(--border-inner);
     font-family: 'DM Mono', monospace;
     font-size: 12px;
   }
 
   .breakdown-row:last-child { border-bottom: none; }
 
-  .breakdown-row .label { color: #555; }
-  .breakdown-row .value { color: #e8e0d0; }
+  .breakdown-row .label { color: var(--text-dim); }
+  .breakdown-row .value { color: var(--text); }
   .breakdown-row .value.positive { color: #4caf50; }
   .breakdown-row .value.negative { color: #ef5350; }
-  .breakdown-row .value.gold { color: #c8a96e; }
+  .breakdown-row .value.gold { color: var(--accent); }
 
   .divider {
     border: none;
-    border-top: 1px solid #222;
+    border-top: 1px solid var(--border-subtle);
     margin: 8px 0;
   }
 
@@ -300,7 +376,7 @@ const styles = `
     font-size: 13px;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: #888;
+    color: var(--text-dim);
     background: none;
     border: none;
     cursor: pointer;
@@ -312,7 +388,7 @@ const styles = `
     transition: color 0.2s;
   }
 
-  .reset-btn:hover { color: #c8a96e; }
+  .reset-btn:hover { color: var(--accent); }
 `;
 
 function fmt(n, prefix = "$") {
@@ -337,8 +413,8 @@ function colorClass(n) {
 
 const warningStyle = `
   .warning-box {
-    background: #1a1400;
-    border: 1px solid #4d3a00;
+    background: var(--warning-bg);
+    border: 1px solid var(--warning-border);
     border-radius: 4px;
     padding: 16px 20px;
     margin-bottom: 12px;
@@ -350,7 +426,7 @@ const warningStyle = `
   .warning-text { font-family: 'DM Mono', monospace; font-size: 11px; color: #f0a500; line-height: 1.6; }
   .warning-text strong { display: block; font-size: 12px; margin-bottom: 2px; }
   .threshold-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-  .threshold-row label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: #555; white-space: nowrap; }
+  .threshold-row label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); white-space: nowrap; }
   .threshold-row input { flex: 1; }
 `;
 
@@ -398,7 +474,6 @@ function BRRRRAnalyzer() {
     const cocReturn = cashLeftIn > 0 ? (annualCashFlow / cashLeftIn) * 100 : Infinity;
     const equity = arv - refiLoan;
 
-    // Verdict logic
     const failReasons = [];
     const passReasons = [];
 
@@ -421,6 +496,17 @@ function BRRRRAnalyzer() {
 
     setResults({ totalInvested, refiLoan, refiFees, cashReturned, cashLeftIn, mortgage, effectiveRent, mgmtCost, totalExpenses, monthlyCashFlow, annualCashFlow, cocReturn, equity, isGo, failReasons, passReasons, capitalWarning, maxCapitalLeft });
   }
+
+  const thresholdInputStyle = {
+    background: 'var(--input-bg)',
+    border: '1px solid var(--border-subtle)',
+    borderRadius: '3px',
+    padding: '10px 14px',
+    color: 'var(--text)',
+    fontFamily: "'DM Mono', monospace",
+    fontSize: '14px',
+    outline: 'none',
+  };
 
   if (results) return (
     <div className="results">
@@ -528,9 +614,9 @@ function BRRRRAnalyzer() {
         <div className="card-title">Your Thresholds</div>
         <div className="threshold-row">
           <label>Max Capital Left in Deal</label>
-          <input type="number" placeholder="e.g. 20000 — leave blank to just see a warning" value={f.maxCapitalLeft} onChange={set("maxCapitalLeft")} style={{background:"#0a0a0a", border:"1px solid #222", borderRadius:"3px", padding:"10px 14px", color:"#e8e0d0", fontFamily:"'DM Mono', monospace", fontSize:"14px", outline:"none"}} />
+          <input type="number" placeholder="e.g. 20000 — leave blank to just see a warning" value={f.maxCapitalLeft} onChange={set("maxCapitalLeft")} style={thresholdInputStyle} />
         </div>
-        <p style={{fontFamily:"'DM Mono',monospace", fontSize:"10px", color:"#444", lineHeight:"1.6"}}>
+        <p style={{fontFamily:"'DM Mono',monospace", fontSize:"10px", color:"var(--text-muted)", lineHeight:"1.6"}}>
           If left blank, unreturned capital will show as a warning but won't affect the verdict. Set a number to make it a hard No-Go condition.
         </p>
       </div>
@@ -656,12 +742,93 @@ function FlipAnalyzer() {
 
 export default function App() {
   const [tab, setTab] = useState("brrrr");
+  const [darkMode, setDarkMode] = useState(true);
+  const [accent, setAccent] = useState('#c8a96e');
+  const [warmBg, setWarmBg] = useState(true);
+
+  useEffect(() => {
+    document.body.style.background = darkMode ? '#0a0a0a' : (warmBg ? '#f5f0e8' : '#f0f4f8');
+  }, [darkMode, warmBg]);
+
+  const cssVars = darkMode ? {
+    '--bg': '#0a0a0a',
+    '--card-bg': '#111',
+    '--border': '#1e1e1e',
+    '--border-subtle': '#222',
+    '--border-inner': '#1a1a1a',
+    '--text': '#e8e0d0',
+    '--text-dim': '#555',
+    '--text-muted': '#666',
+    '--placeholder': '#333',
+    '--accent': accent,
+    '--tab-hover-bg': '#111',
+    '--tab-hover-text': '#e8e0d0',
+    '--input-bg': '#0a0a0a',
+    '--verdict-go-bg': '#0d1f0d',
+    '--verdict-go-border': '#1a4d1a',
+    '--verdict-nogo-bg': '#1f0d0d',
+    '--verdict-nogo-border': '#4d1a1a',
+    '--warning-bg': '#1a1400',
+    '--warning-border': '#4d3a00',
+  } : {
+    '--bg': warmBg ? '#f5f0e8' : '#f0f4f8',
+    '--card-bg': '#ffffff',
+    '--border': warmBg ? '#e0d8cc' : '#cdd9e5',
+    '--border-subtle': warmBg ? '#ddd6c8' : '#c8d8e8',
+    '--border-inner': warmBg ? '#ece6da' : '#dce8f2',
+    '--text': '#1a1a1a',
+    '--text-dim': '#777',
+    '--text-muted': '#999',
+    '--placeholder': '#bbb',
+    '--accent': accent,
+    '--tab-hover-bg': warmBg ? '#ece6da' : '#e4edf5',
+    '--tab-hover-text': '#1a1a1a',
+    '--input-bg': '#ffffff',
+    '--verdict-go-bg': '#e8f5e9',
+    '--verdict-go-border': '#a5d6a7',
+    '--verdict-nogo-bg': '#ffebee',
+    '--verdict-nogo-border': '#ef9a9a',
+    '--warning-bg': '#fff8e1',
+    '--warning-border': '#ffe082',
+  };
 
   return (
     <>
       <style>{styles}</style>
-      <div className="app">
+      <div className="app" style={cssVars}>
         <div className="header">
+          <div className="header-controls">
+            {!darkMode && (
+              <>
+                <button
+                  className={`bg-swatch${warmBg ? ' selected' : ''}`}
+                  style={{ background: '#f5f0e8' }}
+                  onClick={() => setWarmBg(true)}
+                  title="Warm background"
+                />
+                <button
+                  className={`bg-swatch${!warmBg ? ' selected' : ''}`}
+                  style={{ background: '#f0f4f8' }}
+                  onClick={() => setWarmBg(false)}
+                  title="Cool background"
+                />
+                <div className="swatch-divider" />
+              </>
+            )}
+            {ACCENTS.map(color => (
+              <button
+                key={color}
+                className={`color-swatch${accent === color ? ' selected' : ''}`}
+                style={{ background: color }}
+                onClick={() => setAccent(color)}
+                title={color}
+              />
+            ))}
+            <div className="swatch-divider" />
+            <button className="theme-toggle" onClick={() => setDarkMode(d => !d)}>
+              {darkMode ? 'Light' : 'Dark'}
+            </button>
+          </div>
           <h1>DEAL<span>CHECK</span></h1>
           <p>Real Estate Deal Analyzer · Richmond, VA</p>
         </div>
