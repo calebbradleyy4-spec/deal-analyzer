@@ -297,10 +297,10 @@ const styles = `
 
   .reset-btn {
     font-family: 'DM Mono', monospace;
-    font-size: 10px;
+    font-size: 13px;
     letter-spacing: 2px;
     text-transform: uppercase;
-    color: #444;
+    color: #888;
     background: none;
     border: none;
     cursor: pointer;
